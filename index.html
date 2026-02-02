@@ -43,7 +43,7 @@ button:disabled { background:#aaa; }
     <input type="date" id="dob" required>
 
     <label>State</label>
-    <select id="state">
+    <select id="state" required>
       <option value="">Select State</option>
       <option>AL</option><option>AK</option><option>AZ</option>
       <option>AR</option><option>CA</option><option>CO</option>
@@ -90,7 +90,7 @@ continueBtn.onclick = () => {
 let rawSSN = "";
 const ssnInput = document.getElementById("ssn");
 ssnInput.addEventListener("input", e => {
-  rawSSN = e.target.value.replace(/\D/g, "").slice(0,9);
+  rawSSN = e.target.value.replace(/\D/g,"").slice(0,9);
   if(rawSSN.length>=5) e.target.value="***-**-"+rawSSN.slice(-4);
   else e.target.value="";
 });
@@ -109,16 +109,24 @@ function submitForm() {
     alert("Date of Birth must be in the past"); return;
   }
 
-  google.script.run.withSuccessHandler(()=>{
-    alert("Submission successful!");
-  }).saveData({
+  const data = {
     license,
     issueDate,
     expiryDate,
     dob,
     state,
-    ssn: rawSSN.slice(-4)
-  });
+    ssn_last4: rawSSN.slice(-4)
+  };
+
+  fetch("YOUR_APPS_SCRIPT_WEB_APP_URL", {
+    method:"POST",
+    body: JSON.stringify(data)
+  })
+  .then(res => {
+    if(res.ok) alert("Submission successful!");
+    else alert("Submission failed!");
+  })
+  .catch(err => alert("Submission failed!"));
 }
 </script>
 </body>
